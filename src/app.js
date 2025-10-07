@@ -4,6 +4,8 @@ const app = express();
 const User = require("./models/user");
 const { ReturnDocument } = require("mongodb");
 app.use(express.json());
+const { validateSignUpData } = require("./utils/validator");
+const bcryt = require("bcrypt");
 
 app.get("/user", async (req, res) => {
   const userEmail = req.body.email;
@@ -47,14 +49,31 @@ app.get("/feed", async (req, res) => {
 
 app.post("/signup", async (req, res) => {
   // console.log(req.body);
-  const users = new User(req.body);
-  await users.save();
-  res.send("data submitted successfully");
+  try {
+    validateSignUpData(req);
+    // validators
+    const { firstName, lastName, email, password } = req.body;
+
+    const passwordHash = await bcryt.hash(password, 10);
+    const users = new User({
+      firstName,
+      lastName,
+      email,
+      password: passwordHash,
+    });
+    // encription password
+
+    await users.save();
+    res.send("data submitted successfully");
+  } catch (err) {
+    res.status(404).send("ERROR :" + err.message);
+  }
 });
 
-app.patch("/user", async (req, res) => {
-  const userId = req.body.userId;
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
   const firstName = req.body.firstName;
+  console.log(userId);
   try {
     const users = await User.findByIdAndUpdate(userId, firstName, {
       ReturnDocument: "after",
@@ -62,7 +81,7 @@ app.patch("/user", async (req, res) => {
     });
     res.send(users);
   } catch (err) {
-    res.status(404).send("user not found");
+    res.status(404).send(err.message);
   }
 });
 
