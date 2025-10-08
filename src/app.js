@@ -5,7 +5,7 @@ const User = require("./models/user");
 const { ReturnDocument } = require("mongodb");
 app.use(express.json());
 const { validateSignUpData } = require("./utils/validator");
-const bcryt = require("bcrypt");
+const bcrypt = require("bcrypt");
 
 app.get("/user", async (req, res) => {
   const userEmail = req.body.email;
@@ -54,19 +54,24 @@ app.post("/signup", async (req, res) => {
     // validators
     const { firstName, lastName, email, password } = req.body;
 
-    const passwordHash = await bcryt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
     const users = new User({
       firstName,
       lastName,
       email,
       password: passwordHash,
     });
+    if (!users) {
+      throw new Error("Duplicate email id or password ");
+    }
+
     // encription password
 
     await users.save();
-    res.send("data submitted successfully");
+    res.send("Data submitted successfully");
   } catch (err) {
-    res.status(404).send("ERROR :" + err.message);
+    res.status(404).send("ERROR : Dublicate email or password");
+    console.log(err);
   }
 });
 
@@ -85,6 +90,23 @@ app.patch("/user/:userId", async (req, res) => {
   }
 });
 
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      throw new Error("Invalid Credentials");
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (isPasswordValid) {
+      res.send("Login Sucessfully");
+    } else {
+      throw new Error("Invalid Credentials");
+    }
+  } catch (err) {
+    res.status(402).send("Error :" + err.message);
+  }
+});
 connectDB()
   .then(() => {
     console.log("database connection established...");
