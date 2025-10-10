@@ -7,6 +7,7 @@ const { validateSignUpData } = require("./utils/validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const { userAuth } = require("./middlewares/auth");
 app.use(express.json());
 app.use(cookieParser());
 
@@ -119,24 +120,9 @@ app.post("/login", async (req, res) => {
     res.status(404).send("Error :" + err.message);
   }
 });
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const cookies = req.cookies;
-    // destructure the token
-    const { token } = cookies;
-    if (!token) {
-      throw new Error("Invalid Token");
-    }
-
-    // take token and secreaT CODE then give the _id and iat
-    const decodeMessage = jwt.verify(token, "DEV@Tinder$2411");
-    const { _id } = decodeMessage;
-    // find the user by passing user id getting from cookies jwt token
-    const user = await User.findById(_id);
-    // give the user
-    if (!user) {
-      throw new Error("User does not found");
-    }
+    const user = req.user;
     res.send(user);
   } catch (err) {
     res.status(404).send("Error :" + err.message);

@@ -13,9 +13,10 @@ const userAuth = async (req, res, next) => {
     if (!user) {
       throw new Error("user not found");
     }
+    req.user = user;
     next();
   } catch (err) {
     res.staus(400).send(err.message);
   }
 };
-module.exports = { adminAuth, userAuth };
+module.exports = { userAuth };
