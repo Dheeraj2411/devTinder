@@ -104,14 +104,15 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid Credentials");
     }
-    // compare the enter password and store hashing paASSword in data base
-    // return boolean value
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (isPasswordValid) {
-      // take the user id and secreat code by passing in bakend
-      const token = jwt.sign({ _id: user._id }, "DEV@Tinder$2411");
 
-      res.cookie("token", token);
+    const isPasswordValid = await user.isPasswordValid(password);
+    if (isPasswordValid) {
+      const token = await user.getJWT();
+
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 900000),
+        httpsOnly: true,
+      });
       res.send("Login Sucessfully");
     } else {
       throw new Error("Invalid Credentials");
