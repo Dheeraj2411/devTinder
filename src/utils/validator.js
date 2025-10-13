@@ -10,4 +10,9 @@ const validateSignUpData = (req) => {
     throw new Error("Enter Strong Password");
   }
 };
-module.exports = { validateSignUpData };
+const validateRditProfileData = async(req)=>{
+  const allowedEditsFields =["firstName","lastName","age","gender","photoURL","about"]
+   const isEditAllowed = Object?.keys(req.body).every(field=>allowedEditsFields.includes(field))
+    return isEditAllowed 
+}
+module.exports = { validateSignUpData ,validateRditProfileData};

@@ -19,4 +19,5 @@ const userAuth = async (req, res, next) => {
     res.staus(400).send(err.message);
   }
 };
+
 module.exports = { userAuth };

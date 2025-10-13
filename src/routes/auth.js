@@ -5,6 +5,36 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const { validateSignUpData } = require("../utils/validator");
 
+authRouter.post("/signup", async (req, res) => {
+  // console.log(req.body);
+  try {
+    validateSignUpData(req);
+    // validators
+    const { firstName, lastName, email, password } = req.body;
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const users = new User({
+      firstName,
+      lastName,
+      email,
+      age,
+      gender,
+      password: passwordHash,
+    });
+    if (!users) {
+      throw new Error("Duplicate email id or password ");
+    }
+
+    // encription password
+
+    await users.save();
+    res.send("Data submitted successfully");
+  } catch (err) {
+    res.status(404).send("ERROR : Dublicate email or password");
+    console.log(err);
+  }
+});
+
 authRouter.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -31,32 +61,10 @@ authRouter.post("/login", async (req, res) => {
     res.status(404).send("Error :" + err.message);
   }
 });
-authRouter.post("/signup", async (req, res) => {
-  // console.log(req.body);
-  try {
-    validateSignUpData(req);
-    // validators
-    const { firstName, lastName, email, password } = req.body;
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const users = new User({
-      firstName,
-      lastName,
-      email,
-      password: passwordHash,
-    });
-    if (!users) {
-      throw new Error("Duplicate email id or password ");
-    }
-
-    // encription password
-
-    await users.save();
-    res.send("Data submitted successfully");
-  } catch (err) {
-    res.status(404).send("ERROR : Dublicate email or password");
-    console.log(err);
-  }
+authRouter.post("/logout", async (req, res) => {
+  res.cookie("token", null, { expires: new Date(Date.now()) });
+  res.send("logout Successfully");
 });
 
 module.exports = authRouter;
