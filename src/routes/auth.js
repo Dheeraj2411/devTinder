@@ -17,7 +17,6 @@ authRouter.post("/signup", async (req, res) => {
       firstName,
       lastName,
       email,
-
       password: passwordHash,
     });
     if (!users) {
