@@ -76,10 +76,9 @@ requestRouter.post(
         toUserId: loggedInUser._id,
         status: "interested",
       });
-      // accept the req and upadte the of status 
+      // accept the req and upadte the of status
       //  get the status od connection id and find the user
-console.log(status)
-console.log(requestId)
+
       if (!connectionRequest) {
         return res.status(404).json({
           message: "connection request not found",

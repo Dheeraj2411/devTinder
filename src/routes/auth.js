@@ -13,22 +13,28 @@ authRouter.post("/signup", async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const users = new User({
+    const user = new User({
       firstName,
       lastName,
       email,
       password: passwordHash,
     });
-    if (!users) {
+    if (!user) {
       throw new Error("Duplicate email id or password ");
     }
 
     // encription password
+    const savedUser = await user.save();
+    const token = await savedUser.getJWT();
 
-    await users.save();
-    res.send("Data submitted successfully");
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 8 * 3600000),
+    });
+    res.json(user);
+
+    res.json({ message: "User Added successfully", data: savedUser });
   } catch (err) {
-    res.status(404).send("ERROR : Dublicate email or password");
+    res.status(404).send({ error: "Dublicate email or password" });
     console.log(err);
   }
 });
@@ -49,14 +55,14 @@ authRouter.post("/login", async (req, res) => {
 
       res.cookie("token", token, {
         expires: new Date(Date.now() + 900000),
-        httpsOnly: true,
+        httpOnly: true,
       });
       res.json(user);
     } else {
       throw new Error("Invalid Credentials");
     }
   } catch (err) {
-    res.status(404).send("Error :" + err.message);
+    res.status(401).send("Error : " + err.message);
   }
 });
 
